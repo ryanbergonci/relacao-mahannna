@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Relação para WhatsApp</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#5fff00">
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1d1d1b;--mut:#6b6b66;--line:#e2e0da;--acc:#128c4a;--accink:#fff;--bub:#d9fdd3;--bubink:#111;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111513;--card:#1b211e;--ink:#eef1ef;--mut:#98a19c;--line:#2c3430;--acc:#25d366;--accink:#06210f;--bub:#005c4b;--bubink:#e9edef}}
+:root[data-theme="dark"]{--bg:#111513;--card:#1b211e;--ink:#eef1ef;--mut:#98a19c;--line:#2c3430;--acc:#25d366;--accink:#06210f;--bub:#005c4b;--bubink:#e9edef}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:18px;grid-template-columns:1fr}
+@media(min-width:820px){.wrap{grid-template-columns:1.1fr .9fr;align-items:start}}
+h1{font-size:20px;margin:0 0 2px}
+.sub{color:var(--mut);font-size:14px;margin:0 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:0 0 10px}
+.card+.card{margin-top:14px}
+input[type=text],select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus,select:focus{outline:2px solid var(--acc);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 96px 36px;gap:8px;margin-bottom:8px}
+.row .d{grid-column:1/-1}
+.irow{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+.row button{border:1px solid var(--line);background:none;color:var(--mut);border-radius:10px;cursor:pointer;font-size:18px}
+.add{margin-top:2px;border:1px dashed var(--line);background:none;color:var(--ink);padding:9px 12px;border-radius:10px;cursor:pointer;font:inherit;width:100%}
+.tot{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tot input[type=text]{width:130px}
+.tot label{display:flex;gap:6px;align-items:center;font-size:14px}
+.sticky{position:sticky;top:12px}
+.bubble{background:var(--bub);color:var(--bubink);border-radius:10px 10px 10px 2px;padding:12px 14px;white-space:pre-wrap;word-break:break-word;font-size:15px;line-height:1.45;box-shadow:0 1px 1px rgba(0,0,0,.12);min-height:80px}
+.btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{flex:1;min-width:130px;padding:12px 14px;border-radius:12px;border:0;background:var(--acc);color:var(--accink);font:inherit;font-weight:600;cursor:pointer}
+.btn.sec{background:none;border:1px solid var(--line);color:var(--ink);font-weight:500}
+.ok{color:var(--acc);font-size:14px;min-height:20px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div>
+  <h1>Relação para WhatsApp</h1>
+  <p class="sub">Preencha, copie e cole direto na conversa.</p>
+  <div class="card">
+   <h2>Título</h2>
+   <input type="text" id="title" value="EVENTOS DA SEMANA">
+  </div>
+  <div class="card">
+   <h2>Eventos 📅</h2>
+   <div id="events"></div>
+   <button class="add" data-add="events">+ Adicionar evento</button>
+  </div>
+  <div class="card">
+   <h2>Materiais 📄</h2>
+   <div id="items"></div>
+   <button class="add" data-add="items">+ Adicionar material</button>
+  </div>
+  <div class="card">
+   <h2>Total 💵</h2>
+   <div class="tot">
+    <label><input type="checkbox" id="manual"> Informar total manualmente</label>
+    <input type="text" id="manualVal" inputmode="decimal" placeholder="0,00" disabled>
+   </div>
+   <p class="sub" style="margin-top:8px">Por padrão o total soma todos os valores preenchidos.</p>
+  </div>
+  <div class="card">
+   <h2>Catálogo de materiais</h2>
+   <p class="sub" style="margin-bottom:10px">Materiais com valor fechado. Eles aparecem na lista suspensa acima.</p>
+   <div id="catalog"></div>
+   <button class="add" data-add="catalog">+ Adicionar ao catálogo</button>
+  </div>
+ </div>
+ <div class="sticky">
+  <div class="card">
+   <h2>Prévia</h2>
+   <div class="bubble" id="preview"></div>
+   <div class="btns">
+    <button class="btn" id="copy">Copiar mensagem</button>
+    <button class="btn sec" id="clear">Limpar tudo</button>
+   </div>
+   <div class="ok" id="msg" role="status"></div>
+  </div>
+ </div>
+</div>
+<script>
+(function(){
+var KEY='relacao-whatsapp-v2';
+function defCat(){return [{id:'copo',n:'Copo',v:'75,00'},{id:'pano',n:'Pano',v:'45,00'},{id:'camiseta',n:'Camiseta',v:'70,00'},{id:'faixa-espelho',n:'Faixa [espelho]',v:'45,00'},{id:'placa',n:'Placa',v:'45,00'},{id:'cardapio-video',n:'Cardápio [video]',v:'105,00'},{id:'cardapio-impresso',n:'Cardápio [impresso]',v:'80,00'}];}
+var S={title:'EVENTOS DA SEMANA',events:[{n:'',v:''},{n:'',v:''}],items:[{m:'',d:'',v:''}],catalog:defCat(),manual:false,manualVal:''};
+try{var s=localStorage.getItem(KEY);if(s){var p=JSON.parse(s);if(p&&p.events&&p.items&&p.catalog)S=p;}}catch(e){}
+if(S.catVer!==2){S.catalog=defCat();S.catVer=2;}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function num(v){if(v===''||v==null)return 0;var t=String(v).replace(/[^\d,.\-]/g,'');
+ if(t.indexOf(',')>-1)t=t.replace(/\./g,'').replace(',','.');
+ var n=parseFloat(t);return isNaN(n)?0:n;}
+function fmt(n){return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function att(t){return esc(t).replace(/"/g,'&quot;');}
+function esk(t){return esc(t).replace(/\*([^*\n]+)\*/g,'<b>$1</b>');}
+function cat(id){for(var i=0;i<S.catalog.length;i++)if(S.catalog[i].id===id)return S.catalog[i];return null;}
+function build(){
+ var L=['• • •','📋 '+S.title.trim(),'• • •'],sum=0;
+ var ev=S.events.filter(function(r){return r.n.trim()||num(r.v)});
+ if(ev.length){L.push('');ev.forEach(function(r){var v=num(r.v);sum+=v;L.push('📅 '+(r.n.trim()||'Evento')+(v?' — *'+fmt(v)+'*':''));});}
+ var it=S.items.filter(function(r){return r.m||r.d.trim()||num(r.v)});
+ if(it.length){L.push('');it.forEach(function(r){var v=num(r.v),c=cat(r.m),d=r.d.trim(),nm;sum+=v;
+  nm=c?(d?c.n+': '+d:c.n):(d||'Material');
+  L.push('📄 '+nm+(v?' — *'+fmt(v)+'*':''));});}
+ var total=S.manual?num(S.manualVal):sum;
+ L.push('','————————————','','💵 *TOTAL:* ————— R$ '+fmt(total));
+ return L.join('\n');
+}
+function rows(kind){
+ var h='';
+ S[kind].forEach(function(r,i){
+  var b='data-k="'+kind+'" data-i="'+i+'"';
+  var del='<button data-del="'+kind+'" data-i="'+i+'" aria-label="Remover">×</button>';
+  if(kind==='items'){
+   var o='<option value="">Outro / sem material</option>';
+   S.catalog.forEach(function(c){o+='<option value="'+att(c.id)+'"'+(c.id===r.m?' selected':'')+'>'+esc(c.n)+' — '+esc(c.v)+'</option>';});
+   h+='<div class="row irow"><select '+b+' data-f="m">'+o+'</select>'
+    +'<input type="text" inputmode="decimal" '+b+' data-f="v" placeholder="Valor" value="'+att(r.v)+'">'+del
+    +'<input class="d" type="text" '+b+' data-f="d" placeholder="Descrição (ex.: Slut: Pokemon)" value="'+att(r.d)+'"></div>';
+  }else{
+   var ph=kind==='events'?'Nome do evento':'Nome do material';
+   h+='<div class="row"><input type="text" '+b+' data-f="n" placeholder="'+ph+'" value="'+att(r.n)+'">'
+    +'<input type="text" inputmode="decimal" '+b+' data-f="v" placeholder="Valor" value="'+att(r.v)+'">'+del+'</div>';
+  }
+ });
+ document.getElementById(kind).innerHTML=h;
+}
+function draw(){document.getElementById('preview').innerHTML=esk(build());save();}
+function all(){rows('events');rows('items');rows('catalog');draw();}
+document.getElementById('title').value=S.title;
+document.getElementById('manual').checked=S.manual;
+document.getElementById('manualVal').value=S.manualVal;
+document.getElementById('manualVal').disabled=!S.manual;
+document.addEventListener('input',function(e){
+ var t=e.target;
+ if(t.id==='title'){S.title=t.value;draw();}
+ else if(t.id==='manualVal'){S.manualVal=t.value;draw();}
+ else if(t.dataset.k&&t.tagName==='INPUT'){S[t.dataset.k][+t.dataset.i][t.dataset.f]=t.value;
+  if(t.dataset.k==='catalog')rows('items');draw();}
+});
+document.addEventListener('change',function(e){
+ var t=e.target;
+ if(t.tagName==='SELECT'&&t.dataset.k==='items'){
+  var r=S.items[+t.dataset.i];r.m=t.value;var c=cat(r.m);if(c)r.v=c.v;
+  rows('items');draw();}
+});
+document.getElementById('manual').addEventListener('change',function(e){
+ S.manual=e.target.checked;var m=document.getElementById('manualVal');m.disabled=!S.manual;if(S.manual)m.focus();draw();});
+document.addEventListener('click',function(e){
+ var t=e.target,k;
+ if(t.dataset.add){k=t.dataset.add;
+  if(k==='events')S.events.push({n:'',v:''});
+  else if(k==='items')S.items.push({m:'',d:'',v:''});
+  else S.catalog.push({id:'c'+Date.now(),n:'',v:''});
+  rows(k);if(k==='catalog')rows('items');
+  var inp=document.querySelectorAll('#'+k+' input');if(inp.length)inp[k==='items'?inp.length-1:inp.length-2].focus();draw();}
+ else if(t.dataset.del){k=t.dataset.del;var a=S[k],i=+t.dataset.i,gone=a[i];a.splice(i,1);
+  if(k==='catalog'){S.items.forEach(function(r){if(r.m===gone.id)r.m='';});rows('items');}
+  else if(!a.length)a.push(k==='items'?{m:'',d:'',v:''}:{n:'',v:''});
+  rows(k);draw();}
+});
+document.getElementById('copy').addEventListener('click',function(){
+ var txt=build(),msg=document.getElementById('msg');
+ function done(){msg.textContent='Copiado! Agora é só colar no WhatsApp.';setTimeout(function(){msg.textContent='';},3000);}
+ function fallback(){var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');done();}catch(e){msg.textContent='Não foi possível copiar. Selecione o texto da prévia.';}document.body.removeChild(ta);}
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,fallback);}else fallback();
+});
+document.getElementById('clear').addEventListener('click',function(){
+ S.events=[{n:'',v:''},{n:'',v:''}];S.items=[{m:'',d:'',v:''}];S.manual=false;S.manualVal='';
+ document.getElementById('manual').checked=false;document.getElementById('manualVal').value='';document.getElementById('manualVal').disabled=true;all();});
+all();
+})();
+</script>
+</body>
+</html>
